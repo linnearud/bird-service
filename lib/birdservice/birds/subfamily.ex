@@ -5,7 +5,6 @@ defmodule Birdservice.Birds.Subfamily do
   alias Birdservice.Birds.Genus
 
   schema "subfamilies" do
-    field :families, :string
     field :name_latin, :string
     field :name_sv, :string
     field :slug, :string

@@ -12,7 +12,6 @@ defmodule BirdserviceWeb.SubfamilyView do
 
   def render("subfamily.json", %{subfamily: subfamily}) do
     %{id: subfamily.id,
-      families: subfamily.families,
       slug: subfamily.slug,
       name_latin: subfamily.name_latin,
       name_sv: subfamily.name_sv}
