@@ -11,6 +11,7 @@ defmodule Birdservice.Birds.Family do
 
     belongs_to :order, Order
     has_many :subfamilies, Subfamily
+    has_many :genera, Genus
 
     timestamps()
   end
