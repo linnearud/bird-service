@@ -116,7 +116,7 @@ defmodule Birdservice.Birds do
 
   """
   def list_orders do
-    Repo.all(Order)
+    Repo.all(Order) |> Repo.preload([:families])
   end
 
   @doc """
@@ -133,7 +133,9 @@ defmodule Birdservice.Birds do
       ** (Ecto.NoResultsError)
 
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order!(id) do
+    Repo.get!(Order, id) |> Repo.preload([:families])
+  end
 
   @doc """
   Creates a order.
@@ -211,8 +213,8 @@ defmodule Birdservice.Birds do
       [%Family{}, ...]
 
   """
-  def list_families do
-    Repo.all(Family)
+  def list_families do 
+    Repo.all(Family) |> Repo.preload([:subfamilies, :genera])
   end
 
   @doc """
@@ -229,7 +231,9 @@ defmodule Birdservice.Birds do
       ** (Ecto.NoResultsError)
 
   """
-  def get_family!(id), do: Repo.get!(Family, id)
+  def get_family!(id) do
+    Repo.get!(Family, id) |> Repo.preload([:subfamilies, :genera])
+  end
 
   @doc """
   Creates a family.
@@ -308,7 +312,7 @@ defmodule Birdservice.Birds do
 
   """
   def list_subfamilies do
-    Repo.all(Subfamily)
+    Repo.all(Subfamily) |> Repo.preload([:genera])
   end
 
   @doc """
@@ -325,7 +329,9 @@ defmodule Birdservice.Birds do
       ** (Ecto.NoResultsError)
 
   """
-  def get_subfamily!(id), do: Repo.get!(Subfamily, id)
+  def get_subfamily!(id) do
+    Repo.get!(Subfamily, id) |> Repo.preload([:genera])
+  end
 
   @doc """
   Creates a subfamily.
@@ -404,7 +410,7 @@ defmodule Birdservice.Birds do
 
   """
   def list_genera do
-    Repo.all(Genus)
+    Repo.all(Genus) |> Repo.preload([:birds, :subfamily, :family])
   end
 
   @doc """
@@ -421,7 +427,9 @@ defmodule Birdservice.Birds do
       ** (Ecto.NoResultsError)
 
   """
-  def get_genus!(id), do: Repo.get!(Genus, id)
+  def get_genus!(id) do
+    Repo.get!(Genus, id) |> Repo.preload([:birds, :subfamily])
+  end
 
   @doc """
   Creates a genus.

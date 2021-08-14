@@ -13,17 +13,30 @@ defmodule BirdserviceWeb.BirdView do
   end
 
   def render("bird.json", %{bird: bird}) do
-    %{id: bird.id,
-      slug: bird.slug,
-      name_sv: bird.name_sv,
-      name_latin: bird.name_latin,
-      name_en: bird.name_en,
-      characteristics: bird.characteristics,
-      spread: bird.spread,
-      link: bird.link,
-      hunt: bird.hunt,
-      images: render_many(bird.images, BirdImageView, "bird_image.json"),
-      genus: render_one(bird.genus, GenusView, "genus.json"),
-    }
+    if Ecto.assoc_loaded?(bird.images) && Ecto.assoc_loaded?(bird.genus) do
+      %{id: bird.id,
+        slug: bird.slug,
+        name_sv: bird.name_sv,
+        name_latin: bird.name_latin,
+        name_en: bird.name_en,
+        characteristics: bird.characteristics,
+        spread: bird.spread,
+        link: bird.link,
+        hunt: bird.hunt,
+        images: render_many(bird.images, BirdImageView, "bird_image.json"),
+        genus: render_one(bird.genus, GenusView, "genus.json"),
+      }
+    else
+      %{id: bird.id,
+        slug: bird.slug,
+        name_sv: bird.name_sv,
+        name_latin: bird.name_latin,
+        name_en: bird.name_en,
+        characteristics: bird.characteristics,
+        spread: bird.spread,
+        link: bird.link,
+        hunt: bird.hunt,
+      }
+    end
   end
 end

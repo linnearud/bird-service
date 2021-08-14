@@ -3,6 +3,7 @@ defmodule Birdservice.Birds.Family do
   import Ecto.Changeset
   alias Birdservice.Birds.Order
   alias Birdservice.Birds.Subfamily
+  alias Birdservice.Birds.Genus
 
   schema "families" do
     field :name_latin, :string
