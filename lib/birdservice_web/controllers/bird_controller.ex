@@ -20,6 +20,11 @@ defmodule BirdserviceWeb.BirdController do
     end
   end
 
+  def show_related(conn, %{"id" => id, "size" => size}) do
+    birds = Birds.get_related_birds!(id, size)
+    render(conn, "index.json", birds: birds)
+  end
+
   def show(conn, %{"id" => id}) do
     bird = Birds.get_bird!(id)
     render(conn, "show.json", bird: bird)

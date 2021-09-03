@@ -22,6 +22,8 @@ defmodule BirdserviceWeb.Router do
     pipe_through :api
 
     resources "/birds", BirdController, except: [:new, :edit]
+    get "/birds/:id/related", BirdController, :show_related
+
     resources "/bird_images", BirdImageController, except: [:new, :edit]
     resources "/orders", OrderController, except: [:new, :edit]
     resources "/families", FamilyController, except: [:new, :edit]

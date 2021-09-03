@@ -7,6 +7,10 @@ defmodule Birdservice.Birds do
   alias Birdservice.Repo
 
   alias Birdservice.Birds.Bird
+  alias Birdservice.Birds.Genus
+  alias Birdservice.Birds.Subfamily
+  alias Birdservice.Birds.Family
+  alias Birdservice.Birds.Order
 
   @doc """
   Returns the list of birds.
@@ -37,6 +41,119 @@ defmodule Birdservice.Birds do
   """
   def get_bird!(id) do
     bird = Repo.get!(Bird, id) |> Repo.preload([:images, :genus])
+  end
+
+  @doc """
+  Gets a list of related birds with the specified size.
+
+  Raises `Ecto.NoResultsError` if the Bird does not exist.
+
+  ## Examples
+
+      iex> get_related_birds!(123, 3)
+      [%Bird{}, ...]
+
+      iex> get_related_birds!(456, 3)
+      ** (Ecto.NoResultsError)
+
+  """
+
+  #TODO where does it live and make dynamic
+  defmacro priority_as_case_when(
+    condition, 
+    then: then_expr, 
+    when2: condition2, 
+    then2: then_expr2, 
+    when3: condition3, 
+    then3: then_expr3, 
+    when4: condition4, 
+    then4: then_expr4, 
+    else: else_expr,
+  ) do
+    quote do
+      fragment(
+        "CASE 
+          WHEN ? THEN ? 
+          WHEN ? THEN ? 
+          WHEN ? THEN ? 
+          WHEN ? THEN ? 
+          ELSE ? 
+        END AS priority",
+        unquote(condition),
+        unquote(then_expr),
+        unquote(condition2),
+        unquote(then_expr2),
+        unquote(condition3),
+        unquote(then_expr3),
+        unquote(condition4),
+        unquote(then_expr4),
+        unquote(else_expr)
+      )
+    end
+  end
+
+  def get_related_birds!(id, size) do
+    bird = Repo.get!(Bird, id) |> Repo.preload([:genus])
+    genus = bird.genus
+    family = Repo.get!(Family, bird.genus.family_id) |> Repo.preload([:order]) 
+    order = family.order
+    int_size = String.to_integer(size)
+
+    #TODO Return normal list of birds
+
+    if genus.subfamily_id != nil do
+      birds = Bird
+        |> join(:left, [b], g in Genus, on: b.genus_id == g.id)
+        |> join(:left, [b,g], s in Subfamily, on: g.subfamily_id == s.id)
+        |> join(:left, [b,g], f in Family, on: g.family_id == f.id)
+        |> join(:left, [b,g,s,f], o in Order, on: f.order_id == o.id)
+        |> select([b,g,s,f,o], %{
+            related: true,
+            bird_data: b,
+            priority: priority_as_case_when(
+              (g.id == ^genus.id),
+              then: 1,
+              when2: (s.id == ^genus.subfamily_id),
+              then2: 2,
+              when3: (f.id == ^genus.family_id),
+              then3: 3,
+              when4: (o.id == ^order.id),
+              then4: 4,
+              else: 5
+            )
+          })
+        |> where([b], b.id != ^bird.id)
+        |> order_by(fragment("priority, RANDOM()"))
+        |> preload([b], [:images, :genus])
+        |> Repo.all
+        |> Enum.take(int_size)
+    else
+      birds = Bird
+        |> join(:left, [b], g in Genus, on: b.genus_id == g.id)
+        |> join(:left, [b,g], f in Family, on: g.family_id == f.id)
+        |> join(:left, [b,g,f], o in Order, on: f.order_id == o.id)
+        |> select([b,g,f,o], %{
+            related: true,
+            bird_data: b,
+            priority: priority_as_case_when(
+              (g.id == ^genus.id),
+              then: 1,
+              when2: (f.id == ^genus.family_id),
+              then2: 2,
+              when3: (o.id == ^order.id),
+              then3: 3,
+              when4: true,
+              then4: 4,
+              else: 5
+            )
+          })
+        |> where([b], b.id != ^bird.id)
+        |> order_by(fragment("priority, RANDOM()"))
+        |> preload([b], [:images, :genus])
+        |> Repo.all
+        |> Enum.take(int_size)
+    end
+
   end
 
   @doc """
@@ -103,8 +220,6 @@ defmodule Birdservice.Birds do
   def change_bird(%Bird{} = bird, attrs \\ %{}) do
     Bird.changeset(bird, attrs)
   end
-
-  alias Birdservice.Birds.Order
 
   @doc """
   Returns the list of orders.
@@ -202,8 +317,6 @@ defmodule Birdservice.Birds do
     Order.changeset(order, attrs)
   end
 
-  alias Birdservice.Birds.Family
-
   @doc """
   Returns the list of families.
 
@@ -299,8 +412,6 @@ defmodule Birdservice.Birds do
   def change_family(%Family{} = family, attrs \\ %{}) do
     Family.changeset(family, attrs)
   end
-
-  alias Birdservice.Birds.Subfamily
 
   @doc """
   Returns the list of subfamilies.
@@ -398,8 +509,6 @@ defmodule Birdservice.Birds do
     Subfamily.changeset(subfamily, attrs)
   end
 
-  alias Birdservice.Birds.Genus
-
   @doc """
   Returns the list of genera.
 
@@ -428,7 +537,7 @@ defmodule Birdservice.Birds do
 
   """
   def get_genus!(id) do
-    Repo.get!(Genus, id) |> Repo.preload([:birds, :subfamily])
+    Repo.get!(Genus, id) |> Repo.preload([:birds, :subfamily, :family])
   end
 
   @doc """
