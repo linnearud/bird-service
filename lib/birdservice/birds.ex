@@ -22,7 +22,7 @@ defmodule Birdservice.Birds do
 
   """
   def list_birds do
-    birds = Repo.all(Bird) |> Repo.preload([:images, :genus])
+    Repo.all(Bird) |> Repo.preload([:images, :genus])
   end
 
   @doc """
@@ -40,7 +40,7 @@ defmodule Birdservice.Birds do
 
   """
   def get_bird!(id) do
-    bird = Repo.get!(Bird, id) |> Repo.preload([:images, :genus])
+    Repo.get!(Bird, id) |> Repo.preload([:images, :genus])
   end
 
   @doc """
@@ -99,10 +99,8 @@ defmodule Birdservice.Birds do
     order = family.order
     int_size = String.to_integer(size)
 
-    #TODO Return normal list of birds
-
     if genus.subfamily_id != nil do
-      birds = Bird
+      Bird
         |> join(:left, [b], g in Genus, on: b.genus_id == g.id)
         |> join(:left, [b,g], s in Subfamily, on: g.subfamily_id == s.id)
         |> join(:left, [b,g], f in Family, on: g.family_id == f.id)
@@ -127,8 +125,9 @@ defmodule Birdservice.Birds do
         |> preload([b], [:images, :genus])
         |> Repo.all
         |> Enum.take(int_size)
+        |> Enum.map(fn b -> b.bird_data end)
     else
-      birds = Bird
+      Bird
         |> join(:left, [b], g in Genus, on: b.genus_id == g.id)
         |> join(:left, [b,g], f in Family, on: g.family_id == f.id)
         |> join(:left, [b,g,f], o in Order, on: f.order_id == o.id)
@@ -152,8 +151,8 @@ defmodule Birdservice.Birds do
         |> preload([b], [:images, :genus])
         |> Repo.all
         |> Enum.take(int_size)
+        |> Enum.map(fn b -> b.bird_data end)
     end
-
   end
 
   @doc """
